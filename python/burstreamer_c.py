@@ -20,8 +20,10 @@
 #
 
 
-import numpy
+import numpy as np
 from gnuradio import gr
+import pmt
+from threading import Lock
 
 class burstreamer_c(gr.sync_block):
     """
@@ -29,14 +31,39 @@ class burstreamer_c(gr.sync_block):
     """
     def __init__(self):
         gr.sync_block.__init__(self,
-            name="burstreamer_c",
+            name=self.__class__.__name__,
             in_sig=None,
-            out_sig=[<+numpy.float32+>, ])
+            out_sig=[np.complex64])
 
+        self.ready_samples = np.empty((0, ))
+
+        self.message_port_register_in(pmt.intern('pdus'))
+        self.set_msg_handler(pmt.intern('pdus'), self.pdu_handler)
+        self.ready_samples_lock = Lock()
+
+    def pdu_handler(self, pdu):
+        cdr = pmt.cdr(pdu)
+        new_samples = pmt.to_python(cdr)
+        with self.ready_samples_lock:
+            self.ready_samples = np.concatenate((self.ready_samples, new_samples))
 
     def work(self, input_items, output_items):
         out = output_items[0]
-        # <+signal processing here+>
-        out[:] = whatever
-        return len(output_items[0])
 
+        with self.ready_samples_lock:
+            n_demanded = len(out)
+            n_ready = len(self.ready_samples)
+
+            n_zeros = max(0, n_demanded - n_ready)
+            zeros = np.zeros(n_zeros)
+
+            n_consumed = min(n_ready, n_demanded)
+
+            samples = self.ready_samples[0:n_consumed]
+
+            out[0:n_consumed] = samples
+            out[n_consumed:] = zeros
+
+            self.ready_samples = self.ready_samples[n_consumed:]
+
+        return n_demanded

@@ -1,0 +1,22 @@
+#!/usr/bin/bash
+# Build Helper for Arch Linux (in /usr not in /usr/local)
+
+mkdir -p build
+cd build/
+
+# First we remove last installed files to avoid leaving them behind.
+if [ -f Makefile ]; then
+    sudo make uninstall
+fi
+
+if [ "$1" = "clean" ] || [ "$2" = "clean" ]; then
+    rm -fr build/*
+fi
+
+if [ "$1" = "notest" ] || [ "$2" = "notest" ]; then
+    cmake -DCMAKE_INSTALL_PREFIX=/usr -Wno-dev -DCMAKE_BUILD_TYPE=RelWithDebInfo ../ && make && sudo make install
+else
+    cmake -DCMAKE_INSTALL_PREFIX=/usr -Wno-dev -DCMAKE_BUILD_TYPE=RelWithDebInfo ../ && make && make test && sudo make install
+fi
+
+cd ../
