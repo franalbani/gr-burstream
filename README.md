@@ -2,6 +2,16 @@
 
 GNU Radio OOT module for inserting bursts of samples inside a stream.
 
+## Visual description
+
+![Example](example.png)
+
+## Installation
+
+* Arch linux: `./arch_build_helper`
+
+## Misc
+
 Made following this instructions: https://wiki.gnuradio.org/index.php/OutOfTreeModules
 
 * `gr_modtool newmod burstream`
