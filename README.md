@@ -5,6 +5,7 @@ GNU Radio OOT module for inserting bursts of samples inside a stream.
 ## Visual description
 
 ![Example](example.png)
+![Example running](example_running.png)
 
 ## Installation
 
