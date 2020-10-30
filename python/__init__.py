@@ -32,4 +32,5 @@ except ImportError:
     pass
 
 # import any pure python here
+from .burstreamer_c import burstreamer_c
 #
